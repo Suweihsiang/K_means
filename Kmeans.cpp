@@ -24,6 +24,7 @@ void Kmeans::fit(MatrixXd& datas) {
 		vector<VectorXd>prev_centroids = centroids;
 		centroids.clear();
 		int j = 0;
+		double old_new_dist = 0.0;
 		for (int i = 0; i < n_clusters; i++) {
 			int count = 0;
 			VectorXd new_centroid = VectorXd::Zero(datas.cols());
@@ -32,8 +33,9 @@ void Kmeans::fit(MatrixXd& datas) {
 				count++;
 			}
 			if (count != 0) { centroids.push_back(new_centroid / count); }
-			if (dist(centroids[i], prev_centroids[i]) < tol) { centroids = prev_centroids; return; }//early stop
+			old_new_dist += dist(centroids[i], prev_centroids[i]);
 		}
+		if (old_new_dist < tol) { return; }//early stop
 		iters++;
 	}
 }
