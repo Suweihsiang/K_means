@@ -7,7 +7,7 @@ Kmeans::Kmeans(int n_clusters, int max_iters, double tol) :n_clusters(n_clusters
 Kmeans::~Kmeans() {}
 
 void Kmeans::fit(MatrixXd& datas) {
-	init_centroids(datas);
+	init_centroids(datas);//kmeans++
 	int iters = 0;
 	labels.reserve(datas.rows());
 	while (iters < max_iters) {
@@ -32,7 +32,7 @@ void Kmeans::fit(MatrixXd& datas) {
 				count++;
 			}
 			if (count != 0) { centroids.push_back(new_centroid / count); }
-			if (dist(centroids[i], prev_centroids[i]) < tol) { centroids = prev_centroids; return; }
+			if (dist(centroids[i], prev_centroids[i]) < tol) { centroids = prev_centroids; return; }//early stop
 		}
 		iters++;
 	}
@@ -67,7 +67,7 @@ int Kmeans::nearest_centroid(VectorXd& a) {
 inline void Kmeans::init_centroids(MatrixXd datas) {
 	centroids.reserve(n_clusters);
 	srand(time(NULL));
-	int sel_row = rand()%datas.rows();
+	int sel_row = rand()%datas.rows();//select first centroid randomly
 	centroids.push_back(datas.row(sel_row));
 	datas.block(sel_row, 0, datas.rows() - sel_row - 1, datas.cols()) = datas.block(sel_row + 1, 0, datas.rows() - sel_row - 1, datas.cols()).eval();
 	for (int i = 1; i < n_clusters; i++) {
@@ -85,7 +85,7 @@ inline void Kmeans::init_centroids(MatrixXd datas) {
 		for (int idx = 0; idx < datas_dist.size(); idx++) {
 			sum_dist -= datas_dist[idx];
 			if (sum_dist < 0) { 
-				centroids.push_back(datas.row(idx)); 
+				centroids.push_back(datas.row(idx)); //get next centroid
 				datas.block(idx, 0, datas.rows() - idx - 1, datas.cols()) = datas.block(idx + 1, 0, datas.rows() - idx - 1, datas.cols()).eval();
 				break; 
 			}
@@ -98,7 +98,7 @@ void Kmeans::calc_inertia(vector<pair<VectorXd, int>>& data_labels, vector<Vecto
 	inertia = 0;
 	for (int i = 0; i < centroids.size(); i++) {
 		while (j < data_labels.size() && data_labels[j].second == i) {
-			inertia += dist(data_labels[j++].first, centroids[i]);
+			inertia += dist(data_labels[j++].first, centroids[i]);//sum of the distance between each point to their centroid
 		}
 	}
 }
